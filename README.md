@@ -1,5 +1,5 @@
 # Saltmine-Auto-Zoning-and-Stacking
-
+-------------------------------------------------------------
 # Zoning
 
 ## Integer Linear Programming Collab: 
@@ -17,6 +17,7 @@ https://github.com/jiyanshud22/TEMP/blob/main/Multi_constaraints.ipynb
 ## Zoning demo code:
 https://colab.research.google.com/drive/10frE4YCBgQwo3A5mXK9Y6RD6YjiIfnm4?usp=sharing
 
+-------------------------------------------------------------
 
 # Stacking 
 
