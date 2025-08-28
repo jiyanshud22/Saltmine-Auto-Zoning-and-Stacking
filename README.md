@@ -8,6 +8,9 @@ https://colab.research.google.com/drive/1o1jgOI6G46w2MBGRNUcRukVoPfSGWBkl?usp=sh
 ## Zoning in a Grid Web Application:
 https://saltmine-3.vercel.app/
 
+## Zoning Web Application Code:
+https://github.com/jiyanshud22/Saltmine_Zoning_Webapp
+
 ## Single Constraints:
 https://github.com/AyanBhardwaj06/Ayan_projects/blob/main/Copy_of_CS496_UGP_1.ipynb
 
