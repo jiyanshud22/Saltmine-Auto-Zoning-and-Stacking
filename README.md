@@ -1,6 +1,6 @@
 # Saltmine-Auto-Zoning-and-Stacking
 
-## Zoning
+# Zoning
 
 ## Integer Linear Programming Collab: 
 https://colab.research.google.com/drive/1o1jgOI6G46w2MBGRNUcRukVoPfSGWBkl?usp=sharing
@@ -18,7 +18,7 @@ https://github.com/jiyanshud22/TEMP/blob/main/Multi_constaraints.ipynb
 https://colab.research.google.com/drive/10frE4YCBgQwo3A5mXK9Y6RD6YjiIfnm4?usp=sharing
 
 
-## Stacking 
+# Stacking 
 
 ## Stacking Logic used:
 https://app.napkin.ai/page/CgoiCHByb2Qtb25lEiwKBFBhZ2UaJGYyNjMzZmI2LWVhMzctNGE2OC04ZmJiLTdiZWE1YzY1OTk1Mw
