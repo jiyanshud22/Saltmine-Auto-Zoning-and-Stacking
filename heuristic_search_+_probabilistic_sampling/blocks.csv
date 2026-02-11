@@ -1,0 +1,101 @@
+id,name,category,width,height,area,organization,superblock_id,placed,x,y
+BLK-001,Interactive Zone Phone Booths (Double),WE,2,3,6,Anchor Resident,SB-01,True,77.0,15.0
+BLK-002,Waste Management,SUPPORT,3,3,9,Anchor Resident,SB-01,True,26.0,20.0
+BLK-003,Individual Zone Touchdown Seats,ME,3,4,12,Anchor Resident,SB-01,True,5.0,15.0
+BLK-004,Interactive Zone Focus Rooms (2-3p),ME,3,3,9,Anchor Resident,SB-01,True,9.0,15.0
+BLK-005,Coffee Bar (barista-serviced coffee shop),US,7,7,49,Anchor Resident,SB-01,True,9.0,20.0
+BLK-006,Coffee Bar (barista-serviced coffee shop),US,8,8,64,Anchor Resident,SB-01,True,17.0,20.0
+BLK-007,Alternative Food Points,US,7,7,49,Anchor Resident,SB-02,True,88.0,19.0
+BLK-008,Kitchen/Pantry (with self-service beverage),SUPPORT,3,3,9,Anchor Resident,SB-02,True,62.0,27.0
+BLK-009,Team Storage,SUPPORT,3,2,6,Anchor Resident,SB-03,True,83.0,34.0
+BLK-010,Individual Zone Phone Booths (Double),WE,2,4,8,Anchor Resident,SB-01,True,80.0,15.0
+BLK-011,Interactive Zone Work Desks (with partitions),ME,3,3,9,Anchor Resident,SB-01,True,13.0,15.0
+BLK-012,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-013,Interactive Zone Phone Booths (Single),WE,3,3,9,Anchor Resident,SB-01,True,83.0,15.0
+BLK-014,Interactive Zone Focus Rooms (2-3p),ME,4,3,12,Anchor Resident,SB-01,True,17.0,15.0
+BLK-015,Individual Zone Focus Rooms (2-3p),ME,3,3,9,Anchor Resident,SB-01,True,22.0,15.0
+BLK-016,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-017,Janitor's Closet,SUPPORT,3,3,9,Anchor Resident,SB-04,True,29.0,40.0
+BLK-018,Visitor Touchdown,US,7,7,49,Anchor Resident,SB-02,True,35.0,27.0
+BLK-019,General Storage,SUPPORT,3,3,9,Anchor Resident,SB-05,True,53.0,40.0
+BLK-020,Small Meeting (7-9 pax),WE,2,3,6,Anchor Resident,SB-01,True,87.0,15.0
+BLK-021,Interactive Zone Focus Rooms (2-3p),ME,3,4,12,Anchor Resident,SB-01,True,26.0,15.0
+BLK-022,Individual Zone Work Desks (no partition),ME,4,4,16,Anchor Resident,SB-01,True,30.0,15.0
+BLK-023,Coffee Bar (barista-serviced coffee shop),US,9,10,90,Anchor Resident,SB-02,True,43.0,27.0
+BLK-024,Individual Zone Focus Rooms (1p),ME,3,3,9,Anchor Resident,SB-01,True,35.0,15.0
+BLK-025,Interactive Zone Focus Rooms (2-3p),ME,4,4,16,Anchor Resident,SB-01,True,39.0,15.0
+BLK-026,Interactive Zone Phone Booths (Double),WE,2,3,6,Anchor Resident,SB-01,True,90.0,15.0
+BLK-027,Security Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-028,Interactive Zone Phone Booths (Double),WE,3,3,9,Anchor Resident,SB-01,True,5.0,20.0
+BLK-029,Restaurant (full-service café),US,8,8,64,Anchor Resident,SB-02,True,53.0,27.0
+BLK-030,General Storage,SUPPORT,3,3,9,Anchor Resident,SB-06,True,65.0,50.0
+BLK-031,Flex Space (formerly Agile Space),US,5,8,40,Anchor Resident,SB-03,True,78.0,25.0
+BLK-032,Interactive Zone Focus Rooms (2-3p),ME,3,3,9,Anchor Resident,SB-01,True,44.0,15.0
+BLK-033,Security Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-034,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-035,Coffee Bar (barista-serviced coffee shop),US,5,10,50,Anchor Resident,SB-03,True,65.0,34.0
+BLK-036,Visitor Touchdown,US,6,9,54,Anchor Resident,SB-03,True,71.0,34.0
+BLK-037,Waste Management,SUPPORT,2,3,6,Anchor Resident,SB-07,True,29.0,65.0
+BLK-038,Individual Zone Touchdown Seats,ME,4,4,16,Anchor Resident,SB-01,True,48.0,15.0
+BLK-039,Individual Zone Phone Booths (Double),WE,2,4,8,Anchor Resident,SB-02,True,62.0,19.0
+BLK-040,Coffee Bar (barista-serviced coffee shop),US,7,7,49,Anchor Resident,SB-04,True,5.0,40.0
+BLK-041,Alternative Food Points,US,7,7,49,Anchor Resident,SB-04,True,13.0,40.0
+BLK-042,Huddle Room (4-6 pax),WE,3,3,9,Anchor Resident,SB-02,True,65.0,19.0
+BLK-043,Security Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-044,Small Meeting (7-9 pax),WE,2,3,6,Anchor Resident,SB-02,True,69.0,19.0
+BLK-045,General Storage,SUPPORT,2,2,4,Anchor Resident,SB-08,True,51.0,65.0
+BLK-046,Lockers,SUPPORT,3,2,6,Anchor Resident,SB-09,True,65.0,65.0
+BLK-047,Flex Space (formerly Agile Space),US,7,7,49,Anchor Resident,SB-04,True,21.0,40.0
+BLK-048,Mail/Shipping Center,SUPPORT,2,2,4,Anchor Resident,SB-10,False,,
+BLK-049,Individual Zone Focus Rooms (2-3p),ME,4,4,16,Anchor Resident,SB-01,True,53.0,15.0
+BLK-050,Individual Zone Phone Booths (Double),WE,2,2,4,Anchor Resident,SB-02,True,72.0,19.0
+BLK-051,Accessibility Lab,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-052,Alternative Food Points,US,6,6,36,Anchor Resident,SB-05,True,35.0,40.0
+BLK-053,Individual Zone Focus Rooms (1p),ME,4,3,12,Anchor Resident,SB-01,True,58.0,15.0
+BLK-054,Coffee Bar (barista-serviced coffee shop),US,10,5,50,Anchor Resident,SB-05,True,42.0,40.0
+BLK-055,Interactive Zone Phone Booths (Double),WE,2,3,6,Anchor Resident,SB-02,True,75.0,19.0
+BLK-056,Security Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-057,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-058,Interactive Zone Focus Rooms (1p),ME,4,3,12,Anchor Resident,SB-01,True,63.0,15.0
+BLK-059,Individual Zone Focus Rooms (2-3p),ME,3,4,12,Anchor Resident,SB-01,True,68.0,15.0
+BLK-060,Individual Zone Work Desks (no partition),ME,4,4,16,Anchor Resident,SB-01,True,72.0,15.0
+BLK-061,Individual Zone Phone Booths (Double),WE,2,3,6,Anchor Resident,SB-02,True,78.0,19.0
+BLK-062,Individual Zone Focus Rooms (1p),ME,3,3,9,Anchor Resident,SB-02,True,92.0,15.0
+BLK-063,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-064,Janitor's Closet,SUPPORT,3,3,9,Anchor Resident,SB-11,False,,
+BLK-065,Coffee Bar (barista-serviced coffee shop),US,6,9,54,Anchor Resident,SB-06,True,77.0,40.0
+BLK-066,Interactive Zone Focus Rooms (2-3p),ME,4,3,12,Anchor Resident,SB-02,True,35.0,19.0
+BLK-067,Interactive Zone Work Desks (with partitions),ME,3,4,12,Anchor Resident,SB-02,True,40.0,19.0
+BLK-068,Visitor Touchdown,US,5,5,25,Anchor Resident,SB-06,True,90.0,40.0
+BLK-069,Individual Zone Phone Booths (Single),WE,3,3,9,Anchor Resident,SB-02,True,81.0,19.0
+BLK-070,Individual Zone Focus Rooms (1p),ME,3,3,9,Anchor Resident,SB-02,True,44.0,19.0
+BLK-071,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-072,Visitor Touchdown,US,10,5,50,Anchor Resident,SB-07,True,5.0,65.0
+BLK-073,Visitor Touchdown,US,6,5,30,Anchor Resident,SB-07,True,16.0,65.0
+BLK-074,Medium Meeting (10-12 pax),WE,2,4,8,Anchor Resident,SB-02,True,85.0,19.0
+BLK-075,Restaurant (full-service café),US,5,5,25,Anchor Resident,SB-07,True,23.0,65.0
+BLK-076,Interactive Zone Focus Rooms (2-3p),ME,4,4,16,Anchor Resident,SB-02,True,48.0,19.0
+BLK-077,Security Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-078,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-079,Coffee Bar (barista-serviced coffee shop),US,6,9,54,Anchor Resident,SB-08,True,35.0,65.0
+BLK-080,Accessibility Lab,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-081,Individual Zone Phone Booths (Single),WE,3,3,9,Anchor Resident,SB-03,False,,
+BLK-082,Mail/Shipping Center,SUPPORT,2,2,4,Anchor Resident,SB-12,False,,
+BLK-083,Accessibility Lab,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-084,IDF,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-085,Small Meeting (7-9 pax),WE,3,3,9,Anchor Resident,SB-03,True,71.0,21.0
+BLK-086,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-087,Security Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-088,Janitor's Closet,SUPPORT,2,3,6,Anchor Resident,,False,,
+BLK-089,Interactive Zone Touchdown Seats,ME,3,3,9,Anchor Resident,SB-02,True,53.0,19.0
+BLK-090,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-091,Huddle Room (4-6 pax),WE,2,2,4,Anchor Resident,SB-03,True,65.0,25.0
+BLK-092,Interactive Zone Phone Booths (Double),WE,3,3,9,Anchor Resident,SB-03,True,68.0,25.0
+BLK-093,Small Meeting (7-9 pax),WE,2,4,8,Anchor Resident,SB-03,True,72.0,25.0
+BLK-094,Interactive Zone Focus Rooms (1p),ME,4,4,16,Anchor Resident,SB-02,True,57.0,19.0
+BLK-095,Janitor's Closet,SUPPORT,2,3,6,Anchor Resident,,False,,
+BLK-096,Restaurant (full-service café),US,8,5,40,Anchor Resident,SB-08,True,42.0,65.0
+BLK-097,Server Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-098,Interactive Zone Phone Booths (Single),WE,2,2,4,Anchor Resident,SB-03,True,75.0,25.0
+BLK-099,Security Room,SPECIALTY,3,3,9,Anchor Resident,,False,,
+BLK-100,IDF,SPECIALTY,3,3,9,Anchor Resident,,False,,
