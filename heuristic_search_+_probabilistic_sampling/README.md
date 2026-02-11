@@ -1,8 +1,8 @@
-# Zoning Plan Generator - Complete Documentation
+#Documentation
 
 ## Overview
 
-This is a comprehensive **Zoning Plan Generator** system that creates optimized floor plans by placing blocks on a 2D grid while respecting multiple levels of adjacency constraints (Priority 0-5). The system includes both Python algorithms and React visualization components.
+**Zoning Plan Generator** system that creates optimized floor plans by placing blocks on 2D grid while respecting multiple levels of adjacency constraints (Priority 0-5).
 
 ## Project Structure
 
