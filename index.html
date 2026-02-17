@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floor Zoning Intelligence — L004</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #232736;
+    --accent: #00d4b4;
+    --accent2: #7c5cfc;
+    --accent3: #ff6b6b;
+    --text: #e8ecf4;
+    --muted: #6b7280;
+    --gold: #f0c060;
+
+    --me: #4a90e2;
+    --we: #00c896;
+    --support: #f5a623;
+    --unknown: #888;
+
+    --work: #3a7bd5;
+    --meeting: #c055d4;
+    --storage: #e08b20;
+    --support-wp: #f5a623;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); }
+  .floor-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .header-stats {
+    display: flex;
+    gap: 16px;
+    margin-left: auto;
+  }
+  .hstat {
+    text-align: right;
+  }
+  .hstat-val {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .hstat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── UPLOAD SCREEN ── */
+  #upload-screen {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 32px;
+    background: radial-gradient(ellipse at 50% 50%, #131824 0%, var(--bg) 70%);
+  }
+  .upload-title {
+    font-size: 36px;
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .upload-title span { color: var(--accent); }
+  .upload-subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 700px;
+  }
+  .upload-card {
+    background: var(--surface);
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    position: relative;
+  }
+  .upload-card:hover, .upload-card.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,212,180,0.04);
+  }
+  .upload-card.loaded { border-color: var(--accent); border-style: solid; }
+  .upload-card input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-icon { font-size: 32px; margin-bottom: 10px; }
+  .upload-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .upload-card p { font-size: 11px; color: var(--muted); }
+  .upload-card .file-name {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    word-break: break-all;
+  }
+  .process-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 48px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .process-btn:hover { background: #00f0cd; transform: translateY(-1px); }
+  .process-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .demo-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .demo-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── LOADING ── */
+  #loading-screen {
+    flex: 1;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .loading-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .loading-sub {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .progress-bar {
+    width: 360px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.4s ease;
+    animation: pulse 1.5s ease infinite alternate;
+  }
+  @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
+
+  /* ── MAIN APP ── */
+  #app-screen {
+    flex: 1;
+    display: none;
+    overflow: hidden;
+  }
+  .app-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 320px;
+    height: 100%;
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar-left {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-section {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-section h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 6px; }
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 12px;
+    border: 1px solid transparent;
+  }
+  .filter-chip:hover { background: var(--surface2); }
+  .filter-chip.active { background: var(--surface2); border-color: var(--accent); }
+  .filter-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .filter-count {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-box {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px;
+  }
+  .stat-box-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .stat-box-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* ── MAP CANVAS ── */
+  .map-container {
+    position: relative;
+    overflow: hidden;
+    background: #0d0f14;
+  }
+  #floor-canvas {
+    cursor: grab;
+    display: block;
+  }
+  #floor-canvas:active { cursor: grabbing; }
+
+  .map-controls {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 10;
+  }
+  .map-btn {
+    width: 36px; height: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .map-btn:hover { background: var(--surface2); border-color: var(--accent); }
+
+  .map-legend {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: rgba(17,19,24,0.95);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    z-index: 10;
+    min-width: 160px;
+  }
+  .map-legend h5 {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 5px; font-size: 11px;
+  }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── RIGHT PANEL ── */
+  .sidebar-right {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .panel-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 20px;
+    text-align: center;
+  }
+  .panel-empty span { font-size: 28px; }
+
+  .info-block {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .info-block h5 {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 5px;
+    gap: 8px;
+  }
+  .info-label { color: var(--muted); flex-shrink: 0; }
+  .info-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: right;
+    word-break: break-word;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .badge-ME { background: rgba(74,144,226,0.2); color: #7bb4f0; }
+  .badge-WE { background: rgba(0,200,150,0.2); color: #00d4b4; }
+  .badge-Support { background: rgba(245,166,35,0.2); color: #f5a623; }
+  .badge-unknown { background: rgba(100,100,100,0.2); color: var(--muted); }
+
+  .adj-bar-wrap { margin-bottom: 6px; }
+  .adj-label {
+    font-size: 10px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    color: var(--muted);
+  }
+  .adj-label span:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+  .adj-bar {
+    height: 5px;
+    background: var(--bg);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .adj-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+  .adj-forbidden { color: var(--accent3); font-weight: 700; font-size: 10px; }
+
+  /* Constraint checker */
+  .constraint-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .constraint-item:last-child { border-bottom: none; }
+  .c-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+  .c-text { line-height: 1.4; }
+  .c-title { font-weight: 600; margin-bottom: 2px; }
+  .c-desc { color: var(--muted); font-size: 11px; }
+
+  /* Analysis tab */
+  .tab-row {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    font-size: 11px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    max-width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip-name { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
+  .tooltip-row { color: var(--muted); font-size: 11px; }
+  .tooltip-row strong { color: var(--text); }
+
+  /* Search */
+  .search-box {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--muted); }
+
+  /* Analysis charts */
+  .mini-chart { margin-top: 8px; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 11px;
+  }
+  .bar-label { width: 120px; color: var(--muted); flex-shrink: 0; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-val { width: 30px; text-align: right; font-family: 'JetBrains Mono', monospace; color: var(--text); font-size: 10px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">ZONE<span>INTEL</span></div>
+  <div class="floor-badge" id="floor-badge">L004 · FLOOR 03</div>
+  <div id="header-stats" class="header-stats" style="display:none">
+    <div class="hstat">
+      <div class="hstat-val" id="hs-zones">—</div>
+      <div class="hstat-label">Zones</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="hs-matched">—</div>
+      <div class="hstat-label">Matched</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="hs-superblocks">—</div>
+      <div class="hstat-label">Superblocks</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="hs-score">—</div>
+      <div class="hstat-label">Avg Match</div>
+    </div>
+  </div>
+</header>
+
+<!-- UPLOAD SCREEN -->
+<div id="upload-screen">
+  <div>
+    <div class="upload-title">Floor Zoning<br><span>Intelligence Platform</span></div>
+    <div class="upload-subtitle" style="margin-top:10px">
+      Upload your spatial JSON and zoning Excel files to visualize block placement,
+      adjacency constraints, and optimization objectives on the floor plan.
+    </div>
+  </div>
+  <div class="upload-grid">
+    <div class="upload-card" id="json-card">
+      <input type="file" id="json-input" accept=".json">
+      <div class="upload-icon">🗺️</div>
+      <h3>Spatial Data (JSON)</h3>
+      <p>Floor plan spatial data with zones, walls, and boundaries</p>
+      <div class="file-name" id="json-filename">Drop or click to upload</div>
+    </div>
+    <div class="upload-card" id="excel-card">
+      <input type="file" id="excel-input" accept=".xlsx,.xls">
+      <div class="upload-icon">📊</div>
+      <h3>Zoning Data (Excel)</h3>
+      <p>Block data, adjacency matrices, and constraint rules</p>
+      <div class="file-name" id="excel-filename">Drop or click to upload</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;flex-direction:column">
+    <button class="process-btn" id="process-btn" disabled onclick="processFiles()">
+      ⚡ Process & Visualize
+    </button>
+    <button class="demo-btn" onclick="loadDemoData()">Load Demo (pre-processed L004 data)</button>
+  </div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="loading-text" id="loading-title">Processing Floor Data…</div>
+  <div class="loading-sub" id="loading-sub">Initializing…</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="app-screen">
+  <div class="app-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar-left">
+      <div class="sidebar-section">
+        <h4>Statistics</h4>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-box-val" id="s-total">0</div>
+            <div class="stat-box-label">Total Zones</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-val" id="s-matched">0</div>
+            <div class="stat-box-label">Matched</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-val" id="s-sb">0</div>
+            <div class="stat-box-label">Superblocks</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-val" id="s-area">0</div>
+            <div class="stat-box-label">Total m²</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <input class="search-input" id="search" placeholder="🔍  Search blocks, zones…" oninput="filterBySearch(this.value)">
+      </div>
+
+      <div class="sidebar-section">
+        <h4>SpaceMix Filter</h4>
+        <div class="filter-group" id="spacemix-filters"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h4>Block Type</h4>
+        <div class="filter-group" id="blocktype-filters"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h4>Superblock</h4>
+        <div class="filter-group" id="superblock-filters" style="max-height:200px;overflow-y:auto"></div>
+      </div>
+
+      <div class="sidebar-section" style="margin-top:auto">
+        <button class="demo-btn" style="width:100%;font-size:11px;padding:7px" onclick="resetView()">↺ Reset View</button>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-container" id="map-container">
+      <canvas id="floor-canvas"></canvas>
+      <div class="map-controls">
+        <button class="map-btn" onclick="zoom(1.2)" title="Zoom In">+</button>
+        <button class="map-btn" onclick="zoom(0.8)" title="Zoom Out">−</button>
+        <button class="map-btn" onclick="fitView()" title="Fit">⊡</button>
+      </div>
+      <div class="map-legend" id="map-legend"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="sidebar-right" id="right-panel">
+      <div class="tab-row" id="panel-tabs" style="display:none">
+        <div class="tab active" onclick="switchTab('info')">Block Info</div>
+        <div class="tab" onclick="switchTab('adj')">Adjacency</div>
+        <div class="tab" onclick="switchTab('constraints')">Constraints</div>
+      </div>
+      <div id="panel-empty" class="panel-empty">
+        <span>🗺️</span>
+        <div>Hover over a zone to explore block details</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Click to pin the selection</div>
+      </div>
+      <div id="panel-info" style="display:none"></div>
+      <div id="panel-adj" style="display:none"></div>
+      <div id="panel-constraints" style="display:none"></div>
+
+      <!-- Analysis always visible at bottom -->
+      <div class="sidebar-section" id="analysis-section" style="margin-top:auto">
+        <h4>Floor Analysis</h4>
+        <div id="analysis-content"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-name" id="tt-name"></div>
+  <div class="tooltip-row" id="tt-1"></div>
+  <div class="tooltip-row" id="tt-2"></div>
+  <div class="tooltip-row" id="tt-3"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  GLOBAL STATE
+// ═══════════════════════════════════════════════════════
+let appData = null;
+let canvas, ctx;
+let camX = 0, camY = 0, camScale = 1;
+let dragging = false, lastMX = 0, lastMY = 0;
+let hoveredZone = null, pinnedZone = null;
+let activeFilters = { spacemix: new Set(), blocktype: new Set(), superblock: new Set(), search: '' };
+let currentTab = 'info';
+let jsonFile = null, excelFile = null;
+
+// ═══════════════════════════════════════════════════════
+//  FILE UPLOAD HANDLERS
+// ═══════════════════════════════════════════════════════
+document.getElementById('json-input').onchange = e => {
+  jsonFile = e.target.files[0];
+  document.getElementById('json-filename').textContent = jsonFile.name;
+  document.getElementById('json-card').classList.add('loaded');
+  checkReady();
+};
+document.getElementById('excel-input').onchange = e => {
+  excelFile = e.target.files[0];
+  document.getElementById('excel-filename').textContent = excelFile.name;
+  document.getElementById('excel-card').classList.add('loaded');
+  checkReady();
+};
+function checkReady() {
+  document.getElementById('process-btn').disabled = !(jsonFile && excelFile);
+}
+
+// Drag-and-drop
+['json-card', 'excel-card'].forEach(id => {
+  const card = document.getElementById(id);
+  card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+  card.addEventListener('drop', e => {
+    e.preventDefault(); card.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (id === 'json-card') {
+      jsonFile = file;
+      document.getElementById('json-filename').textContent = file.name;
+      card.classList.add('loaded');
+    } else {
+      excelFile = file;
+      document.getElementById('excel-filename').textContent = file.name;
+      card.classList.add('loaded');
+    }
+    checkReady();
+  });
+});
+
+// ═══════════════════════════════════════════════════════
+//  PROCESS FILES
+// ═══════════════════════════════════════════════════════
+async function processFiles() {
+  showLoading();
+  setProgress(5, 'Reading JSON spatial data…');
+  await sleep(100);
+
+  try {
+    const jsonText = await readFile(jsonFile, 'text');
+    const jsonData = JSON.parse(jsonText);
+    setProgress(20, 'Parsing spatial entities…');
+    await sleep(100);
+
+    const excelBuffer = await readFile(excelFile, 'arraybuffer');
+    setProgress(35, 'Loading Excel sheets…');
+    await sleep(100);
+
+    const wb = XLSX.read(excelBuffer, { type: 'array' });
+    setProgress(50, 'Processing block data…');
+    await sleep(100);
+
+    const processed = await processData(jsonData, wb);
+    setProgress(80, 'Building zoning overlay…');
+    await sleep(100);
+
+    appData = processed;
+    setProgress(95, 'Rendering floor plan…');
+    await sleep(100);
+
+    launchApp();
+    setProgress(100, 'Done!');
+    await sleep(300);
+  } catch (err) {
+    alert('Error processing files: ' + err.message);
+    console.error(err);
+    showUpload();
+  }
+}
+
+function readFile(file, mode) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    if (mode === 'text') r.readAsText(file);
+    else r.readAsArrayBuffer(file);
+  });
+}
+
+async function loadDemoData() {
+  showLoading();
+  setProgress(20, 'Loading pre-processed data…');
+  await sleep(200);
+
+  try {
+    // Fetch the pre-generated output JSON
+    const resp = await fetch('./zoning_output_L004.json');
+    if (!resp.ok) throw new Error('Demo data not found. Please upload files manually.');
+    const data = await resp.json();
+    setProgress(70, 'Building visualization…');
+    await sleep(200);
+
+    appData = buildAppDataFromOutput(data);
+    setProgress(100, 'Ready!');
+    await sleep(200);
+    launchApp();
+  } catch (err) {
+    setProgress(0, '');
+    showUpload();
+    setTimeout(() => alert('Demo: ' + err.message), 100);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  DATA PROCESSING
+// ═══════════════════════════════════════════════════════
+async function processData(jsonData, wb) {
+  const entities = jsonData.entities || [];
+
+  // Parse spatial zones
+  const zonePolygons = [];
+  for (const e of entities) {
+    if (e.type !== 'AreaPolygon') continue;
+    const d = e.data;
+    if (!['me6veq6r', 'me00s8i2'].includes(d.layer)) continue;
+    const pts = d.polygon || [];
+    if (!pts.length) continue;
+    const name = (d.name || '').trim();
+    zonePolygons.push({
+      uid: d.uid, spatial_name: name,
+      layer: d.layer === 'me00s8i2' ? 'Zoning' : 'Zoning 2',
+      points: pts, fill_color: d.style?.fillColor,
+      centroid_x: pts.reduce((s,p) => s+p.x, 0)/pts.length,
+      centroid_y: pts.reduce((s,p) => s+p.y, 0)/pts.length,
+      bbox: { minX: Math.min(...pts.map(p=>p.x)), maxX: Math.max(...pts.map(p=>p.x)),
+               minY: Math.min(...pts.map(p=>p.y)), maxY: Math.max(...pts.map(p=>p.y)) },
+      spatial_area_m2: Math.abs(polygonArea(pts)) / 1e6,
+    });
+  }
+
+  // Parse room boundaries
+  const roomBoundaries = [];
+  for (const e of entities) {
+    if (e.type !== 'Boundary') continue;
+    const d = e.data;
+    const name = (d.name || '').trim();
+    const sp = d.serializedPath;
+    if (!name || !sp || typeof sp !== 'object') continue;
+    const pts = sp.shape?.points || sp.area?.points || [];
+    if (!pts.length) continue;
+    roomBoundaries.push({
+      uid: d.uid, room_name: name, points: pts,
+      centroid_x: pts.reduce((s,p)=>s+p.x,0)/pts.length,
+      centroid_y: pts.reduce((s,p)=>s+p.y,0)/pts.length,
+    });
+  }
+
+  // Parse walls
+  const walls = entities.filter(e=>e.type==='Wall').map(e=>({
+    x1:e.data.cl?.x||0, y1:e.data.cl?.y||0, x2:e.data.cr?.x||0, y2:e.data.cr?.y||0,
+    thickness: e.data.thickness||10,
+  }));
+
+  // Parse columns
+  const columns = entities.filter(e=>e.type==='SMColumn').map(e=>({
+    points: e.data.polygon||[],
+  }));
+
+  // Parse Excel sheets
+  const blocks = parseBlockData(wb);
+  setProgress(60, 'Matching blocks to zones…');
+  await sleep(50);
+
+  const bfeat = parseBuildingFeatureAdj(wb);
+  const [btbMin, btbMax] = parseBTBAdj(wb);
+  const ncAdj = parseNCAdj(wb);
+  const priorities = parsePriorities(wb);
+
+  // Match blocks to zones
+  const zones = matchZones(zonePolygons, blocks, bfeat, btbMin, btbMax);
+
+  const allX = zonePolygons.flatMap(z=>z.points.map(p=>p.x));
+  const allY = zonePolygons.flatMap(z=>z.points.map(p=>p.y));
+  const floorBounds = {
+    minX: Math.min(...allX), maxX: Math.max(...allX),
+    minY: Math.min(...allY), maxY: Math.max(...allY),
+  };
+
+  const analysis = buildAnalysis(zones, ncAdj, priorities);
+
+  return { zones, roomBoundaries, walls, columns, floorBounds, analysis, ncAdj, priorities };
+}
+
+function parseBlockData(wb) {
+  const sheet = wb.Sheets['Level 4 - Block Data'];
+  if (!sheet) return [];
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+  return rows.filter(r => r.Block_ID).map(r => ({
+    block_id: r.Block_ID,
+    block_name: String(r.Block_Name || '').trim(),
+    block_instance: String(r.Block_Instance_Name || '').trim(),
+    superblock: String(r['pre-processed placement-bundles_Logic 1'] || '').trim(),
+    spacemix: String(r['SpaceMix_(ME_WE_US_Support_Speciality)'] || '').trim(),
+    block_type: String(r.Block_Type || '').trim(),
+    department: String(r.Department_Sub_Department || '').trim(),
+    open_closed: String(r['Open/Closed'] || '').trim(),
+    capacity: parseFloat(r.Block_Capacity) || null,
+    area: parseFloat(r.Block_Area) || null,
+  }));
+}
+
+function parseBuildingFeatureAdj(wb) {
+  const sheet = wb.Sheets['Block to Building Feature Adjac'];
+  if (!sheet) return {};
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: 0 });
+  const result = {};
+  for (const r of rows) {
+    const bn = String(r.Block_Name || '').trim();
+    if (bn) result[bn] = {
+      AHU: parseFloat(r.AHU)||0,
+      Window: parseFloat(r['Window/Glazing Wall/Periferral Glazing'])||0,
+      Main_Entry: parseFloat(r['Main Entry'])||0,
+      Toilets: parseFloat(r.Toilets)||0,
+      Service_Entry: parseFloat(r['Service Entry'])||0,
+      Fire_Egress: parseFloat(r['Fire Egress/Fire exit'])||0,
+      Terrace: parseFloat(r['Terrace/ Balcony'])||0,
+      Core: parseFloat(r.Core)||0,
+    };
+  }
+  return result;
+}
+
+function parseBTBAdj(wb) {
+  const parse = (sheetName) => {
+    const sheet = wb.Sheets[sheetName];
+    if (!sheet) return {};
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: 0, header: 1 });
+    const result = {};
+    if (rows.length < 2) return result;
+    const header = rows[0];
+    const descEnd = 6;
+    const targets = header.slice(descEnd).map(v => String(v||'').trim()).filter(Boolean);
+    for (const row of rows.slice(1)) {
+      const src = String(row[1]||'').trim();
+      if (!src) continue;
+      result[src] = result[src] || {};
+      targets.forEach((t, i) => {
+        const v = parseFloat(row[descEnd+i]);
+        if (!isNaN(v)) result[src][t] = v;
+      });
+    }
+    return result;
+  };
+  return [parse('Block to Block Adjacency - Min '), parse('Block to Block Adjacency - Max ')];
+}
+
+function parseNCAdj(wb) {
+  const sheet = wb.Sheets['Non-Comprimisable Adjacency'];
+  if (!sheet) return [];
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', header: 1 });
+  return rows.slice(1).filter(r=>r[0]||r[1]).map(r=>({ category: String(r[0]||'').trim(), requirement: String(r[1]||'').trim() }));
+}
+
+function parsePriorities(wb) {
+  const sheet = wb.Sheets['Priority Logic'];
+  if (!sheet) return [];
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+  return rows.filter(r=>r.Priority).map(r=>({ priority: String(r.Priority).trim(), rule: String(r['Rule/Logic Order']||'').trim() }));
+}
+
+function normalizeName(s) {
+  return s.toLowerCase().replace(/[-\s]+\d+\s*$/, '').replace(/\s+/,' ').trim();
+}
+
+function nameSimilarity(a, b) {
+  const ta = new Set(normalizeName(a).split(' '));
+  const tb = new Set(normalizeName(b).split(' '));
+  const inter = new Set([...ta].filter(x=>tb.has(x)));
+  const union = new Set([...ta, ...tb]);
+  return union.size ? inter.size / union.size : 0;
+}
+
+function matchZones(zonePolygons, blocks, bfeat, btbMin, btbMax) {
+  const blockByName = {};
+  for (const b of blocks) {
+    if (!blockByName[b.block_name]) blockByName[b.block_name] = [];
+    blockByName[b.block_name].push(b);
+  }
+
+  return zonePolygons.map(zp => {
+    const sn = zp.spatial_name;
+    let best = null, bestScore = 0;
+    for (const [bn, rows] of Object.entries(blockByName)) {
+      let sim = nameSimilarity(sn, bn);
+      const na = normalizeName(bn), nb = normalizeName(sn);
+      if (na && nb && (na.includes(nb) || nb.includes(na))) sim = Math.max(sim, 0.85);
+      if (sim >= 0.3 && sim > bestScore) {
+        bestScore = sim;
+        best = rows[0];
+      }
+    }
+    const bf = bfeat[best?.block_name] || {};
+    const btbMinEdges = btbMin[best?.block_name] || {};
+    const btbMaxEdges = btbMax[best?.block_name] || {};
+    return {
+      ...zp,
+      block_name: best?.block_name || sn || 'Unknown',
+      block_id: best?.block_id || null,
+      block_instance: best?.block_instance || '',
+      superblock: best?.superblock || '',
+      spacemix: best?.spacemix || '',
+      block_type: best?.block_type || '',
+      department: best?.department || '',
+      open_closed: best?.open_closed || '',
+      block_capacity: best?.capacity,
+      block_area_m2: best?.area,
+      match_score: bestScore,
+      building_features: bf,
+      btb_min: btbMinEdges,
+      btb_max: btbMaxEdges,
+    };
+  });
+}
+
+function buildAnalysis(zones, ncAdj, priorities) {
+  const spacemix = {}, blocktype = {}, superblocks = {};
+  let totalArea = 0, matched = 0;
+  for (const z of zones) {
+    const sm = z.spacemix || 'Unknown';
+    spacemix[sm] = (spacemix[sm]||0)+1;
+    const bt = z.block_type || 'Unknown';
+    blocktype[bt] = (blocktype[bt]||0)+1;
+    const sb = z.superblock || 'Unassigned';
+    superblocks[sb] = (superblocks[sb]||0)+1;
+    totalArea += z.spatial_area_m2 || 0;
+    if (z.match_score > 0) matched++;
+  }
+  return { spacemix, blocktype, superblocks, totalArea: Math.round(totalArea), matched, total: zones.length, ncAdj, priorities };
+}
+
+function buildAppDataFromOutput(data) {
+  return {
+    zones: data.zones,
+    roomBoundaries: data.room_boundaries || [],
+    walls: data.walls || [],
+    columns: data.columns || [],
+    floorBounds: data.floor_bounds,
+    analysis: buildAnalysis(data.zones, data.analysis?.non_compromisable||[], data.analysis?.priority_rules||[]),
+    ncAdj: data.analysis?.non_compromisable || [],
+    priorities: data.analysis?.priority_rules || [],
+  };
+}
+
+function polygonArea(pts) {
+  let area = 0;
+  for (let i=0; i<pts.length; i++) {
+    const j = (i+1)%pts.length;
+    area += pts[i].x*pts[j].y - pts[j].x*pts[i].y;
+  }
+  return Math.abs(area)/2;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCREEN TRANSITIONS
+// ═══════════════════════════════════════════════════════
+function showLoading() {
+  document.getElementById('upload-screen').style.display = 'none';
+  document.getElementById('loading-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+function showUpload() {
+  document.getElementById('upload-screen').style.display = 'flex';
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'none';
+}
+function setProgress(pct, msg) {
+  document.getElementById('progress-fill').style.width = pct + '%';
+  if (msg) document.getElementById('loading-sub').textContent = msg;
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ═══════════════════════════════════════════════════════
+//  LAUNCH APP
+// ═══════════════════════════════════════════════════════
+function launchApp() {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+
+  canvas = document.getElementById('floor-canvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  buildFilters();
+  updateHeaderStats();
+  buildAnalysisPanel();
+  fitView();
+  setupMouseEvents();
+  requestAnimationFrame(renderLoop);
+}
+
+function resizeCanvas() {
+  const container = document.getElementById('map-container');
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+}
+
+// ═══════════════════════════════════════════════════════
+//  COLOR MAPPING
+// ═══════════════════════════════════════════════════════
+const SPACEMIX_COLORS = {
+  'ME': '#3d7ae8', 'WE': '#00c896', 'Support': '#e8a020', 'Unknown': '#666'
+};
+const BLOCKTYPE_COLORS = {
+  'Work Zone': '#3a7bd5',
+  'Meeting Zone - Rooms/ Spaces': '#b044d4',
+  'Support - Workplace Storage': '#d08820',
+  'Support - Workplace Support': '#e8a020',
+  '': '#555',
+};
+const SUPERBLOCK_COLORS = [
+  '#00d4b4', '#7c5cfc', '#ff6b6b', '#f0c060', '#4a90e2',
+  '#50d8a8', '#d45ced', '#ff9f43', '#a8e063', '#5c7cfa',
+  '#f94144', '#f3722c', '#90be6d', '#43aa8b',
+];
+
+let colorMode = 'blocktype'; // or 'spacemix' or 'superblock'
+
+function getZoneColor(zone, alpha = 0.75) {
+  if (colorMode === 'spacemix') {
+    return hexToRgba(SPACEMIX_COLORS[zone.spacemix] || '#555', alpha);
+  }
+  if (colorMode === 'superblock') {
+    const sbs = Object.keys(appData.analysis.superblocks);
+    const idx = sbs.indexOf(zone.superblock);
+    const c = idx >= 0 ? SUPERBLOCK_COLORS[idx % SUPERBLOCK_COLORS.length] : '#555';
+    return hexToRgba(c, alpha);
+  }
+  // blocktype (default)
+  const c = BLOCKTYPE_COLORS[zone.block_type] || '#555';
+  return hexToRgba(c, alpha);
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  CANVAS RENDERING
+// ═══════════════════════════════════════════════════════
+function worldToScreen(x, y) {
+  return [(x - camX) * camScale + canvas.width/2,
+          (y - camY) * camScale + canvas.height/2];
+}
+
+function fitView() {
+  if (!appData) return;
+  const b = appData.floorBounds;
+  const W = canvas.width - 40, H = canvas.height - 40;
+  const fw = b.maxX - b.minX, fh = b.maxY - b.minY;
+  camScale = Math.min(W / fw, H / fh) * 0.9;
+  camX = (b.minX + b.maxX) / 2;
+  camY = (b.minY + b.maxY) / 2;
+}
+
+function zoom(factor) {
+  camScale *= factor;
+  camScale = Math.max(0.05, Math.min(camScale, 20));
+}
+
+function resetView() {
+  activeFilters = { spacemix: new Set(), blocktype: new Set(), superblock: new Set(), search: '' };
+  document.getElementById('search').value = '';
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  fitView();
+}
+
+function isFiltered(zone) {
+  const { spacemix, blocktype, superblock, search } = activeFilters;
+  if (spacemix.size && !spacemix.has(zone.spacemix || 'Unknown')) return false;
+  if (blocktype.size && !blocktype.has(zone.block_type || 'Unknown')) return false;
+  if (superblock.size && !superblock.has(zone.superblock || 'Unassigned')) return false;
+  if (search) {
+    const q = search.toLowerCase();
+    if (!zone.block_name.toLowerCase().includes(q) &&
+        !zone.spatial_name.toLowerCase().includes(q) &&
+        !zone.superblock.toLowerCase().includes(q) &&
+        !zone.spacemix.toLowerCase().includes(q)) return false;
+  }
+  return true;
+}
+
+function renderLoop() {
+  if (!appData) { requestAnimationFrame(renderLoop); return; }
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background grid
+  ctx.fillStyle = '#0d0f14';
+  ctx.fillRect(0, 0, W, H);
+
+  // Draw walls
+  ctx.strokeStyle = 'rgba(80,90,120,0.4)';
+  ctx.lineWidth = Math.max(0.5, camScale * 0.015);
+  for (const w of appData.walls) {
+    const [x1, y1] = worldToScreen(w.x1, w.y1);
+    const [x2, y2] = worldToScreen(w.x2, w.y2);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+
+  // Draw zones
+  for (const zone of appData.zones) {
+    if (!isFiltered(zone)) continue;
+    const pts = zone.points;
+    if (!pts || pts.length < 3) continue;
+
+    const isHovered = hoveredZone?.uid === zone.uid;
+    const isPinned = pinnedZone?.uid === zone.uid;
+    const alpha = isHovered || isPinned ? 0.92 : 0.62;
+
+    ctx.beginPath();
+    pts.forEach((p, i) => {
+      const [sx, sy] = worldToScreen(p.x, p.y);
+      if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    });
+    ctx.closePath();
+
+    ctx.fillStyle = getZoneColor(zone, alpha);
+    ctx.fill();
+
+    ctx.strokeStyle = isHovered || isPinned ? 'rgba(0,212,180,0.9)' : 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = isHovered || isPinned ? 2 : 0.5;
+    ctx.stroke();
+
+    // Label if zoomed in enough
+    if (camScale > 0.08) {
+      const [cx, cy] = worldToScreen(zone.centroid_x, zone.centroid_y);
+      const bbox = zone.bbox;
+      const zoneW = (bbox.maxX - bbox.minX) * camScale;
+      if (zoneW > 60) {
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.font = `${Math.min(11, zoneW * 0.08)}px JetBrains Mono`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const label = zone.spatial_name || zone.block_name;
+        ctx.fillText(label.length > 20 ? label.slice(0,18)+'…' : label, cx, cy);
+      }
+    }
+  }
+
+  // Draw room boundaries
+  ctx.strokeStyle = 'rgba(150,160,200,0.5)';
+  ctx.setLineDash([4, 4]);
+  ctx.lineWidth = 1;
+  for (const rb of appData.roomBoundaries) {
+    const pts = rb.points;
+    if (!pts || pts.length < 3) continue;
+    ctx.beginPath();
+    pts.forEach((p, i) => {
+      const [sx, sy] = worldToScreen(p.x, p.y);
+      if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    });
+    ctx.closePath();
+    ctx.stroke();
+    // Room labels
+    if (camScale > 0.05) {
+      const [cx, cy] = worldToScreen(rb.centroid_x, rb.centroid_y);
+      ctx.fillStyle = 'rgba(180,190,220,0.7)';
+      ctx.font = `9px JetBrains Mono`;
+      ctx.textAlign = 'center';
+      ctx.fillText(rb.room_name, cx, cy);
+    }
+  }
+  ctx.setLineDash([]);
+
+  // Draw columns
+  ctx.fillStyle = 'rgba(100,120,180,0.5)';
+  for (const col of appData.columns) {
+    if (!col.points?.length) continue;
+    ctx.beginPath();
+    col.points.forEach((p, i) => {
+      const [sx, sy] = worldToScreen(p.x, p.y);
+      if (i===0) ctx.moveTo(sx,sy); else ctx.lineTo(sx,sy);
+    });
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  requestAnimationFrame(renderLoop);
+}
+
+// ═══════════════════════════════════════════════════════
+//  MOUSE EVENTS
+// ═══════════════════════════════════════════════════════
+function setupMouseEvents() {
+  canvas.addEventListener('mousedown', e => {
+    dragging = true; lastMX = e.clientX; lastMY = e.clientY;
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (dragging) {
+      camX -= (e.clientX - lastMX) / camScale;
+      camY -= (e.clientY - lastMY) / camScale;
+      lastMX = e.clientX; lastMY = e.clientY;
+      hoveredZone = null;
+      hideTooltip();
+    } else {
+      hitTest(e);
+    }
+  });
+  canvas.addEventListener('mouseup', e => {
+    if (!dragging) return;
+    dragging = false;
+  });
+  canvas.addEventListener('click', e => {
+    if (hoveredZone) {
+      pinnedZone = pinnedZone?.uid === hoveredZone.uid ? null : hoveredZone;
+      if (pinnedZone) showZoneInfo(pinnedZone);
+      else clearPanel();
+    }
+  });
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 0.9 : 1.1;
+    const mx = e.clientX - canvas.getBoundingClientRect().left;
+    const my = e.clientY - canvas.getBoundingClientRect().top;
+    const wx = (mx - canvas.width/2) / camScale + camX;
+    const wy = (my - canvas.height/2) / camScale + camY;
+    camScale *= factor;
+    camScale = Math.max(0.05, Math.min(camScale, 20));
+    camX = wx - (mx - canvas.width/2) / camScale;
+    camY = wy - (my - canvas.height/2) / camScale;
+  }, { passive: false });
+  canvas.addEventListener('mouseleave', () => {
+    dragging = false;
+    if (!pinnedZone) { hoveredZone = null; hideTooltip(); }
+  });
+}
+
+function screenToWorld(sx, sy) {
+  return [(sx - canvas.width/2) / camScale + camX,
+          (sy - canvas.height/2) / camScale + camY];
+}
+
+function pointInPolygon(px, py, pts) {
+  let inside = false;
+  for (let i=0, j=pts.length-1; i<pts.length; j=i++) {
+    const xi=pts[i].x, yi=pts[i].y, xj=pts[j].x, yj=pts[j].y;
+    if ((yi>py) !== (yj>py) && px < (xj-xi)*(py-yi)/(yj-yi)+xi) inside = !inside;
+  }
+  return inside;
+}
+
+function hitTest(e) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+  const [wx, wy] = screenToWorld(sx, sy);
+  let found = null;
+  for (const zone of [...appData.zones].reverse()) {
+    if (!isFiltered(zone)) continue;
+    if (!zone.points?.length) continue;
+    const bbox = zone.bbox;
+    if (wx < bbox.minX || wx > bbox.maxX || wy < bbox.minY || wy > bbox.maxY) continue;
+    if (pointInPolygon(wx, wy, zone.points)) { found = zone; break; }
+  }
+  if (found !== hoveredZone) {
+    hoveredZone = found;
+    if (found && !pinnedZone) showTooltip(found, e);
+    else if (!found) hideTooltip();
+    if (found && !pinnedZone) updatePanelHover(found);
+  } else if (found) {
+    updateTooltipPos(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOOLTIP
+// ═══════════════════════════════════════════════════════
+function showTooltip(zone, e) {
+  const tt = document.getElementById('tooltip');
+  document.getElementById('tt-name').textContent = zone.spatial_name || zone.block_name;
+  document.getElementById('tt-1').innerHTML = `<strong>Block:</strong> ${zone.block_name}`;
+  document.getElementById('tt-2').innerHTML = `<strong>SpaceMix:</strong> ${zone.spacemix || '—'} · <strong>Type:</strong> ${zone.block_type || '—'}`;
+  document.getElementById('tt-3').innerHTML = `<strong>Superblock:</strong> ${zone.superblock || 'Unassigned'}`;
+  updateTooltipPos(e);
+  tt.classList.add('visible');
+}
+function updateTooltipPos(e) {
+  const tt = document.getElementById('tooltip');
+  const x = e.clientX + 16, y = e.clientY - 10;
+  tt.style.left = (x + 240 > window.innerWidth ? x - 260 : x) + 'px';
+  tt.style.top = y + 'px';
+}
+function hideTooltip() {
+  document.getElementById('tooltip').classList.remove('visible');
+}
+
+// ═══════════════════════════════════════════════════════
+//  PANEL RENDERING
+// ═══════════════════════════════════════════════════════
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['info','adj','constraints'][i] === tab);
+  });
+  renderCurrentTab();
+}
+
+function showZoneInfo(zone) {
+  document.getElementById('panel-tabs').style.display = 'flex';
+  document.getElementById('panel-empty').style.display = 'none';
+  renderCurrentTab(zone);
+}
+
+function updatePanelHover(zone) {
+  if (!pinnedZone) showZoneInfo(zone);
+}
+
+function renderCurrentTab(zone) {
+  zone = zone || pinnedZone || hoveredZone;
+  if (!zone) return;
+  const tabs = ['info','adj','constraints'];
+  tabs.forEach(t => {
+    document.getElementById('panel-'+t).style.display = currentTab === t ? 'block' : 'none';
+  });
+  if (currentTab === 'info') renderInfo(zone);
+  else if (currentTab === 'adj') renderAdj(zone);
+  else renderConstraints(zone);
+}
+
+function renderInfo(zone) {
+  const sm = zone.spacemix || 'unknown';
+  const html = `
+    <div class="info-block">
+      <h5>Spatial Zone</h5>
+      <div class="info-row"><span class="info-label">Name</span><span class="info-value">${zone.spatial_name || '—'}</span></div>
+      <div class="info-row"><span class="info-label">UID</span><span class="info-value" style="font-size:9px;color:var(--muted)">${zone.uid}</span></div>
+      <div class="info-row"><span class="info-label">Area</span><span class="info-value">${zone.spatial_area_m2?.toFixed(1) || '—'} m²</span></div>
+      <div class="info-row"><span class="info-label">Layer</span><span class="info-value">${zone.layer}</span></div>
+    </div>
+    <div class="info-block">
+      <h5>Block Assignment</h5>
+      <div class="info-row"><span class="info-label">Block Name</span><span class="info-value">${zone.block_name}</span></div>
+      <div class="info-row"><span class="info-label">Block ID</span><span class="info-value">${zone.block_id || '—'}</span></div>
+      <div class="info-row"><span class="info-label">Instance</span><span class="info-value" style="font-size:10px">${zone.block_instance || '—'}</span></div>
+      <div class="info-row"><span class="info-label">Match</span><span class="info-value" style="color:${zone.match_score > 0.7 ? 'var(--accent)' : zone.match_score > 0.4 ? 'var(--gold)' : 'var(--accent3)'}">${(zone.match_score*100).toFixed(0)}%</span></div>
+    </div>
+    <div class="info-block">
+      <h5>Classification</h5>
+      <div class="info-row"><span class="info-label">SpaceMix</span><span class="badge badge-${sm}">${sm.toUpperCase()}</span></div>
+      <div class="info-row"><span class="info-label">Block Type</span><span class="info-value">${zone.block_type || '—'}</span></div>
+      <div class="info-row"><span class="info-label">Open/Closed</span><span class="info-value">${zone.open_closed || '—'}</span></div>
+      <div class="info-row"><span class="info-label">Capacity</span><span class="info-value">${zone.block_capacity || '—'}</span></div>
+      <div class="info-row"><span class="info-label">Block Area</span><span class="info-value">${zone.block_area_m2?.toFixed(1) || '—'} m²</span></div>
+    </div>
+    <div class="info-block">
+      <h5>Superblock Assignment</h5>
+      <div class="info-row"><span class="info-label">Superblock</span><span class="info-value">${zone.superblock || 'Unassigned'}</span></div>
+      <div class="info-row"><span class="info-label">Department</span><span class="info-value">${zone.department || '—'}</span></div>
+    </div>
+  `;
+  document.getElementById('panel-info').innerHTML = html;
+}
+
+function renderAdj(zone) {
+  const bf = zone.building_features || {};
+  const features = [
+    ['AHU', 'AHU'], ['Window', 'Window/Glazing'], ['Main_Entry', 'Main Entry'],
+    ['Toilets', 'Toilets'], ['Service_Entry', 'Service Entry'],
+    ['Fire_Egress', 'Fire Egress'], ['Terrace', 'Terrace/Balcony'], ['Core', 'Core'],
+  ];
+
+  const bfHtml = features.map(([key, label]) => {
+    const val = bf[key] ?? 0;
+    if (val === -1) return `<div class="adj-bar-wrap"><div class="adj-label"><span>${label}</span><span class="adj-forbidden">⊘ FORBIDDEN</span></div></div>`;
+    const pct = Math.max(0, Math.min(100, val * 100));
+    const color = val >= 0.5 ? '#00c896' : val > 0 ? '#f0c060' : '#555';
+    return `<div class="adj-bar-wrap">
+      <div class="adj-label"><span>${label}</span><span style="color:${color}">${val.toFixed(2)}</span></div>
+      <div class="adj-bar"><div class="adj-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+
+  // Top BtB adjacencies
+  const btbMin = zone.btb_min || {};
+  const topBtb = Object.entries(btbMin).filter(([,v]) => v !== null && !isNaN(v) && v !== 0)
+    .sort(([,a],[,b]) => b - a).slice(0, 5);
+  const btbHtml = topBtb.length ? topBtb.map(([name, val]) => {
+    const pct = Math.max(0, Math.min(100, Math.abs(val)*100));
+    const color = val < 0 ? 'var(--accent3)' : val > 0 ? 'var(--accent)' : '#555';
+    return `<div class="adj-bar-wrap">
+      <div class="adj-label" style="font-size:9px"><span>${name.length>30?name.slice(0,28)+'…':name}</span><span style="color:${color}">${val?.toFixed(2)}</span></div>
+      <div class="adj-bar"><div class="adj-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }).join('') : '<div style="color:var(--muted);font-size:11px">No significant block-to-block adjacency data</div>';
+
+  document.getElementById('panel-adj').innerHTML = `
+    <div class="info-block">
+      <h5>Building Feature Adjacency</h5>
+      <div style="margin-top:4px;font-size:10px;color:var(--muted);margin-bottom:8px">⊘ Forbidden · 0 Neutral · 0.25–1.0 Preferred</div>
+      ${bfHtml}
+    </div>
+    <div class="info-block">
+      <h5>Block-to-Block Adjacency (Min)</h5>
+      ${btbHtml}
+    </div>
+  `;
+}
+
+function renderConstraints(zone) {
+  const constraints = [];
+  const bf = zone.building_features || {};
+
+  // Check AHU
+  if (bf.AHU === -1) {
+    constraints.push({ ok: false, title: 'AHU Proximity', desc: 'This block type must NOT be placed near AHU (hard constraint violated if adjacent to mechanical).' });
+  } else {
+    constraints.push({ ok: true, title: 'AHU Proximity', desc: 'No AHU proximity restriction for this block type.' });
+  }
+
+  // Window preference
+  if (bf.Window > 0) {
+    constraints.push({ ok: true, title: 'Window/Glazing Access', desc: `Preference score: ${bf.Window?.toFixed(2)} — this block benefits from external glazing.` });
+  } else if (bf.Window === -1) {
+    constraints.push({ ok: false, title: 'Window/Glazing', desc: 'This block must be placed away from glazing (hard constraint).' });
+  } else {
+    constraints.push({ neutral: true, title: 'Window/Glazing', desc: 'No strong window preference for this block.' });
+  }
+
+  // Fire egress
+  if (bf.Fire_Egress === -1) {
+    constraints.push({ ok: false, title: 'Fire Egress Proximity', desc: 'Must NOT be adjacent to fire egress/exit.' });
+  } else if (bf.Fire_Egress > 0) {
+    constraints.push({ ok: true, title: 'Fire Egress Proximity', desc: `Preference: ${bf.Fire_Egress?.toFixed(2)} — benefits from proximity to fire exit.` });
+  }
+
+  // Match quality
+  const matchOk = zone.match_score >= 0.5;
+  constraints.push({
+    ok: matchOk,
+    warn: !matchOk && zone.match_score > 0,
+    title: 'Block Data Match',
+    desc: `Match confidence: ${(zone.match_score*100).toFixed(0)}%. ${matchOk ? 'Block data reliably linked.' : zone.match_score > 0 ? 'Partial match — verify manually.' : 'No Excel match found for this spatial zone.'}`,
+  });
+
+  // NC adjacency
+  const ncAdj = appData.ncAdj || [];
+  const ncForBlock = ncAdj.filter(nc =>
+    nc.requirement?.toLowerCase().includes(zone.block_name?.toLowerCase().slice(0,8))
+  );
+  if (ncForBlock.length) {
+    constraints.push({ ok: false, title: 'Non-Compromisable Adjacency', desc: ncForBlock.map(nc=>nc.requirement).join('; ') });
+  }
+
+  // Priority rules applied
+  const priorities = appData.priorities || [];
+  if (priorities.length) {
+    constraints.push({
+      neutral: true,
+      title: `${priorities.length} Priority Rules Active`,
+      desc: `Highest: [P0] Non-compromisable adjacency. Lowest: [P9] Block to department.`,
+    });
+  }
+
+  const itemsHtml = constraints.map(c => {
+    const icon = c.ok ? '✅' : c.neutral ? 'ℹ️' : c.warn ? '⚠️' : '❌';
+    return `<div class="constraint-item">
+      <div class="c-icon">${icon}</div>
+      <div class="c-text">
+        <div class="c-title">${c.title}</div>
+        <div class="c-desc">${c.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const satisfied = constraints.filter(c=>c.ok||c.neutral).length;
+  document.getElementById('panel-constraints').innerHTML = `
+    <div class="info-block">
+      <h5>Constraint Analysis · ${satisfied}/${constraints.length} Satisfied</h5>
+      ${itemsHtml}
+    </div>
+  `;
+}
+
+function clearPanel() {
+  document.getElementById('panel-tabs').style.display = 'none';
+  document.getElementById('panel-empty').style.display = 'flex';
+  ['info','adj','constraints'].forEach(t => document.getElementById('panel-'+t).style.display = 'none');
+}
+
+// ═══════════════════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════════════════
+function buildFilters() {
+  const { spacemix, blocktype, superblocks } = appData.analysis;
+
+  // SpaceMix
+  const smEl = document.getElementById('spacemix-filters');
+  smEl.innerHTML = Object.entries(spacemix).sort((a,b)=>b[1]-a[1]).map(([sm, cnt]) => `
+    <div class="filter-chip" onclick="toggleFilter('spacemix','${sm}',this)">
+      <div class="filter-dot" style="background:${SPACEMIX_COLORS[sm]||'#555'}"></div>
+      ${sm} <span class="filter-count">${cnt}</span>
+    </div>`).join('');
+
+  // Block type
+  const btEl = document.getElementById('blocktype-filters');
+  btEl.innerHTML = Object.entries(blocktype).sort((a,b)=>b[1]-a[1]).map(([bt, cnt]) => `
+    <div class="filter-chip" onclick="toggleFilter('blocktype','${bt}',this)">
+      <div class="filter-dot" style="background:${BLOCKTYPE_COLORS[bt]||'#555'}"></div>
+      <span title="${bt}">${bt.length > 22 ? bt.slice(0,20)+'…' : bt}</span>
+      <span class="filter-count">${cnt}</span>
+    </div>`).join('');
+
+  // Superblock
+  const sbEl = document.getElementById('superblock-filters');
+  sbEl.innerHTML = Object.entries(superblocks).sort((a,b)=>b[1]-a[1]).map(([sb, cnt], i) => `
+    <div class="filter-chip" onclick="toggleFilter('superblock','${sb}',this)">
+      <div class="filter-dot" style="background:${SUPERBLOCK_COLORS[i%SUPERBLOCK_COLORS.length]}"></div>
+      <span title="${sb}" style="font-size:10px">${sb.length > 24 ? sb.slice(0,22)+'…' : sb}</span>
+      <span class="filter-count">${cnt}</span>
+    </div>`).join('');
+
+  buildLegend();
+}
+
+function toggleFilter(type, val, el) {
+  const set = activeFilters[type];
+  if (set.has(val)) { set.delete(val); el.classList.remove('active'); }
+  else { set.add(val); el.classList.add('active'); }
+}
+
+function filterBySearch(q) {
+  activeFilters.search = q.trim();
+}
+
+function buildLegend() {
+  const legend = document.getElementById('map-legend');
+  const modes = [
+    { id: 'blocktype', label: 'Block Type', items: Object.entries(BLOCKTYPE_COLORS).filter(([k])=>k) },
+    { id: 'spacemix', label: 'SpaceMix', items: Object.entries(SPACEMIX_COLORS) },
+  ];
+  const mode = modes.find(m=>m.id===colorMode);
+  legend.innerHTML = `<h5>${mode.label}</h5>` + mode.items.map(([label, color]) =>
+    `<div class="legend-item"><div class="legend-swatch" style="background:${color}"></div>${label.replace(/\s*-\s*Rooms\/ Spaces/,'').replace(/Support - /,'')}</div>`
+  ).join('') +
+  `<div style="margin-top:10px;font-size:9px;color:var(--muted)">
+    <a href="#" onclick="toggleColorMode()" style="color:var(--accent2);text-decoration:none">⇄ Switch to ${colorMode==='blocktype'?'SpaceMix':'Block Type'}</a>
+  </div>`;
+}
+
+function toggleColorMode() {
+  colorMode = colorMode === 'blocktype' ? 'spacemix' : colorMode === 'spacemix' ? 'superblock' : 'blocktype';
+  buildLegend();
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════
+//  HEADER & ANALYSIS
+// ═══════════════════════════════════════════════════════
+function updateHeaderStats() {
+  const a = appData.analysis;
+  document.getElementById('header-stats').style.display = 'flex';
+  document.getElementById('hs-zones').textContent = a.total;
+  document.getElementById('hs-matched').textContent = a.matched;
+  document.getElementById('hs-superblocks').textContent = Object.keys(a.superblocks).filter(s=>s!=='Unassigned').length;
+  const avgMatch = appData.zones.filter(z=>z.match_score>0).reduce((s,z)=>s+z.match_score,0) /
+    (appData.zones.filter(z=>z.match_score>0).length || 1);
+  document.getElementById('hs-score').textContent = (avgMatch*100).toFixed(0)+'%';
+
+  document.getElementById('s-total').textContent = a.total;
+  document.getElementById('s-matched').textContent = a.matched;
+  document.getElementById('s-sb').textContent = Object.keys(a.superblocks).filter(s=>s!=='Unassigned').length;
+  document.getElementById('s-area').textContent = a.totalArea;
+}
+
+function buildAnalysisPanel() {
+  const a = appData.analysis;
+  const { spacemix, blocktype } = a;
+  const maxSM = Math.max(...Object.values(spacemix));
+  const smColors = SPACEMIX_COLORS;
+
+  const smHtml = Object.entries(spacemix).sort((a,b)=>b[1]-a[1]).map(([sm, cnt]) => `
+    <div class="bar-row">
+      <div class="bar-label">${sm}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxSM*100).toFixed(0)}%;background:${smColors[sm]||'#555'}"></div></div>
+      <div class="bar-val">${cnt}</div>
+    </div>`).join('');
+
+  const maxBT = Math.max(...Object.values(blocktype));
+  const btHtml = Object.entries(blocktype).sort((a,b)=>b[1]-a[1]).map(([bt, cnt]) => `
+    <div class="bar-row">
+      <div class="bar-label">${bt.replace(/Support - /,'').replace(/ - Rooms\/ Spaces/,'')}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxBT*100).toFixed(0)}%;background:${BLOCKTYPE_COLORS[bt]||'#555'}"></div></div>
+      <div class="bar-val">${cnt}</div>
+    </div>`).join('');
+
+  const priorities = a.priorities || appData.priorities || [];
+  const prioHtml = priorities.slice(0,5).map(p =>
+    `<div style="display:flex;gap:6px;margin-bottom:5px;font-size:10px">
+       <span style="color:var(--accent);font-family:JetBrains Mono;font-weight:700;flex-shrink:0">${p.priority.replace('Priority ','P')}</span>
+       <span style="color:var(--muted)">${p.rule.slice(0,55)}${p.rule.length>55?'…':''}</span>
+     </div>`).join('');
+
+  document.getElementById('analysis-content').innerHTML = `
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:JetBrains Mono;text-transform:uppercase">SpaceMix</div>
+      ${smHtml}
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:JetBrains Mono;text-transform:uppercase">Block Types</div>
+      ${btHtml}
+    </div>
+    <div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:JetBrains Mono;text-transform:uppercase">Priority Rules</div>
+      ${prioHtml}
+      ${priorities.length > 5 ? `<div style="font-size:9px;color:var(--muted)">+${priorities.length-5} more…</div>` : ''}
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
